@@ -65,3 +65,11 @@ Nhật ký ghi lại toàn bộ các câu lệnh / yêu cầu của người dù
 ### [2026-11-23 14:06:27]
 - **Yêu cầu:** `đặt tên promt log theo cú pháp nha promt_log_member_3.md và đẩy lên git giúp tôi sửa tên file đó giúp tôi`
 - **Trạng thái:** Đã đổi tên file sang `promt_log_member_3.md`, đồng bộ vào repository `TKW/promt_log_member_3.md`, commit và push lên nhánh `feature/member-3-inventory`.
+
+---
+
+### [2026-11-23 14:07:48]
+- **Yêu cầu:** `sắp xếp 4 buton này đừng bị thụt, hãy căn đều giãn giúp tôi, sửa xong đẩy lên git giúp tôi`
+- **Trạng thái:** Đang tiến hành chỉnh sửa layout của 4 thẻ KPI cards (`.kpi-grid` / `.kpi-card`) căn đều 4 cột đối xứng trên màn hình desktop (`grid-template-columns: repeat(4, 1fr)`), căn đều chiều cao và khoảng cách, không bị co thụt mép phải, sau đó commit và push lên nhánh `feature/member-3-inventory`.
+
+- **Kết quả:** Đã điều chỉnh CSS `.kpi-grid` thành `repeat(4, minmax(0, 1fr))` trên Desktop, kết hợp breakpoint `repeat(2, minmax(0, 1fr))` cho Tablet và `1fr` cho Mobile. Cả 4 thẻ KPI hiện tại đã được dàn trải đều 100% bề ngang, không còn khoảng trống thừa hay hiện tượng thụt lùi ở mép phải. Đã commit `68004d5` và push thành công lên GitHub.
