@@ -73,3 +73,17 @@ Nhật ký ghi lại toàn bộ các câu lệnh / yêu cầu của người dù
 - **Trạng thái:** Đang tiến hành chỉnh sửa layout của 4 thẻ KPI cards (`.kpi-grid` / `.kpi-card`) căn đều 4 cột đối xứng trên màn hình desktop (`grid-template-columns: repeat(4, 1fr)`), căn đều chiều cao và khoảng cách, không bị co thụt mép phải, sau đó commit và push lên nhánh `feature/member-3-inventory`.
 
 - **Kết quả:** Đã điều chỉnh CSS `.kpi-grid` thành `repeat(4, minmax(0, 1fr))` trên Desktop, kết hợp breakpoint `repeat(2, minmax(0, 1fr))` cho Tablet và `1fr` cho Mobile. Cả 4 thẻ KPI hiện tại đã được dàn trải đều 100% bề ngang, không còn khoảng trống thừa hay hiện tượng thụt lùi ở mép phải. Đã commit `68004d5` và push thành công lên GitHub.
+
+---
+
+### [2026-11-23 14:32:53]
+- **Yêu cầu:** `git pull về toàn bộ đi`
+- **Trạng thái:** Đang tiến hành fetch toàn bộ các nhánh từ origin remote và merge/pull đồng bộ mã nguồn mới nhất về nhánh làm việc.
+
+- **Kết quả:** Đã thực hiện `git fetch --all` và `git pull origin main` thành công về nhánh `feature/member-3-inventory` (Merge commit `ebced45`). Toàn bộ 6 trang của 5 thành viên trong dự án hiện đã có mặt đầy đủ trong nhánh cục bộ, hoạt động đồng bộ và không có conflict:
+  1. `index.html` (Member 2 - Dashboard)
+  2. `inventory.html` (Member 3 - Quản Lý Vật Tư)
+  3. `operations.html` (Member 1 - Nhập/Xuất Kho)
+  4. `history.html` (Member 4 - Lịch Sử Giao Dịch)
+  5. `analytics.html` (Member 5 - Báo Cáo Phân Tích)
+  6. `suppliers.html` (Member 5 - Đối Tác & Nhà Cung Cấp)
