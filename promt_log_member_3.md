@@ -87,3 +87,9 @@ Nhật ký ghi lại toàn bộ các câu lệnh / yêu cầu của người dù
   4. `history.html` (Member 4 - Lịch Sử Giao Dịch)
   5. `analytics.html` (Member 5 - Báo Cáo Phân Tích)
   6. `suppliers.html` (Member 5 - Đối Tác & Nhà Cung Cấp)
+
+---
+
+### [2026-11-23 15:09:57]
+- **Yêu cầu:** `git lên nhánh rồi làm sao cho tôi có contributor đi chứ tôi nhưu ẩn danh vậy`
+- **Trạng thái:** Đang tiến hành kiểm tra cấu hình `user.email` và `user.name` của git, hướng dẫn cách liên kết email tài khoản GitHub để được tính vào danh sách Contributor và xanh cỏ (contribution graph), đồng thời ghi nhận vào nhật ký.
