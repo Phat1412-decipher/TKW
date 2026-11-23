@@ -206,6 +206,7 @@ function drawRoundedTopRect(ctx, x, y, width, height, radius) {
 }
 
 // 2. Vẽ biểu đồ thanh ngang Top 5 Luân chuyển nhanh Hiện Đại
+// 2. Vẽ biểu đồ Top 5 vật tư luân chuyển nhanh (Có Tooltip chi tiết khi rê chuột vào hàng / dấu 3 chấm)
 function renderTopItemsChart(items, exportCounts) {
   const canvas = document.getElementById('topItemsChart');
   if (!canvas) return;
@@ -264,6 +265,8 @@ function renderTopItemsChart(items, exportCounts) {
     { start: '#06b6d4', end: '#0891b2', medal: '5️⃣' }
   ];
 
+  let currentTopHover = -1;
+
   function drawTopFrame(now) {
     const elapsed = now - startTime;
     const progress = Math.min(1, elapsed / animDuration);
@@ -277,8 +280,20 @@ function renderTopItemsChart(items, exportCounts) {
       const curW = Math.max(8, targetW * ease);
       const scheme = colors[idx] || colors[4];
 
+      // Highlight hàng khi đang hover chuột
+      if (idx === currentTopHover) {
+        ctx.fillStyle = '#f1f5f9';
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(4, y - 18, displayWidth - 8, 36, 6);
+        } else {
+          ctx.rect(4, y - 18, displayWidth - 8, 36);
+        }
+        ctx.fill();
+      }
+
       // Huy hiệu & Tên vật tư
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = idx === currentTopHover ? '#1e40af' : '#0f172a';
       ctx.font = '600 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.textAlign = 'left';
 
@@ -318,6 +333,86 @@ function renderTopItemsChart(items, exportCounts) {
   }
 
   topItemsAnimId = requestAnimationFrame(drawTopFrame);
+
+  // Tạo Tooltip hiển thị đầy đủ thông tin khi di chuột vào mục hàng / dấu 3 chấm
+  let tooltip = parent.querySelector('#top-items-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'top-items-tooltip';
+    tooltip.style.cssText = 'position: absolute; pointer-events: none; display: none; background: #0f172a; color: #ffffff; padding: 10px 14px; border-radius: 8px; font-size: 12px; line-height: 1.5; box-shadow: 0 10px 25px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.15); z-index: 1000; width: 280px; box-sizing: border-box; transition: opacity 0.12s ease; opacity: 0;';
+    parent.appendChild(tooltip);
+  }
+
+  // Bắt sự kiện rê chuột (Hover Detection)
+  canvas.onmousemove = function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    let foundIdx = -1;
+    sorted.forEach((item, idx) => {
+      const y = startY + idx * barGap;
+      if (mouseY >= y - 22 && mouseY <= y + 18 && mouseX >= 4 && mouseX <= displayWidth) {
+        foundIdx = idx;
+      }
+    });
+
+    if (foundIdx !== -1) {
+      const item = sorted[foundIdx];
+      const fullItem = (typeof DB !== 'undefined' && DB.getItemById ? DB.getItemById(item.id) : null) || items.find(i => i.id === item.id) || item;
+      const scheme = colors[foundIdx] || colors[4];
+
+      tooltip.innerHTML = `
+        <div style="font-weight: 700; font-size: 13px; color: #60a5fa; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 4px;">
+          ${scheme.medal} ${fullItem.name}
+        </div>
+        <div style="display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; font-size: 11.5px; color: #e2e8f0;">
+          <span style="color:#94a3b8;">Mã vật tư:</span> <strong>${fullItem.id}</strong>
+          <span style="color:#94a3b8;">Danh mục:</span> <span>${fullItem.category || 'Vật liệu xây dựng'}</span>
+          <span style="color:#94a3b8;">Vị trí kệ:</span> <span style="color:#fde047; font-weight:600;">${fullItem.location || 'Kho'}</span>
+          <span style="color:#94a3b8;">Tồn khả dụng:</span> <span style="font-weight:600;">${fullItem.quantity ?? 0} ${fullItem.unit}</span>
+          <span style="color:#94a3b8;">Tổng đã xuất:</span> <span style="color:#4ade80; font-weight:700;">${item.count} ${item.unit}</span>
+          <span style="color:#94a3b8;">Giá xuất kho:</span> <span>${typeof DB !== 'undefined' && DB.formatCurrency ? DB.formatCurrency(fullItem.priceExport || 0) : ''}</span>
+        </div>
+      `;
+
+      tooltip.style.display = 'block';
+      tooltip.style.opacity = '1';
+
+      // Tính toán vị trí tooltip thông minh tránh tràn khung card
+      let tipX = mouseX + 14;
+      if (tipX + 280 > displayWidth) {
+        tipX = Math.max(6, mouseX - 290);
+      }
+      let tipY = mouseY - 45;
+      if (tipY < 5) tipY = mouseY + 15;
+
+      tooltip.style.left = tipX + 'px';
+      tooltip.style.top = tipY + 'px';
+      canvas.style.cursor = 'pointer';
+
+      if (currentTopHover !== foundIdx) {
+        currentTopHover = foundIdx;
+        drawTopFrame(performance.now());
+      }
+    } else {
+      if (currentTopHover !== -1) {
+        currentTopHover = -1;
+        drawTopFrame(performance.now());
+      }
+      tooltip.style.display = 'none';
+      tooltip.style.opacity = '0';
+      canvas.style.cursor = 'default';
+    }
+  };
+
+  canvas.onmouseleave = function() {
+    currentTopHover = -1;
+    tooltip.style.display = 'none';
+    tooltip.style.opacity = '0';
+    canvas.style.cursor = 'default';
+    drawTopFrame(performance.now());
+  };
 }
 
 function formatShort(num) {
