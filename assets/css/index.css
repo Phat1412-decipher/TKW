@@ -2895,3 +2895,19 @@ body.sidebar-locked {
 .urgent-desktop-table .table th {
   font-size: 10.5px;
 }
+
+/* Đảm bảo số tiền lớn trên thẻ KPI và nút Header hiển thị rõ nét không bị tràn ở mọi màn hình */
+.kpi-value {
+  font-size: clamp(16.5px, 1.45vw, 21px) !important;
+}
+
+.iot-scanner-trigger-btn {
+  background: #0f172a !important;
+  color: #38bdf8 !important;
+  border: 1px solid #0284c7 !important;
+}
+
+.iot-scanner-trigger-btn:hover {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+}
