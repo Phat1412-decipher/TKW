@@ -4,6 +4,14 @@
  * Đạt chuẩn WCAG AA, Responsive, Thiết kế hiện đại & Hiệu năng cao
  * ============================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* ĐỒNG BỘ 100% PHÔNG CHỮ ROBOTO CHO TOÀN BỘ TRANG VẬT TƯ */
+body.page-inventory,
+body.page-inventory * {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
 :root {
   --vt-primary: #0284c7;
   --vt-primary-hover: #0369a1;
@@ -21,9 +29,9 @@
   --vt-radius: 8px;
 }
 
-/* Khoảng trống bên dưới trang để nút Chatbot nổi không che khuất dòng cuối */
+/* Khoảng trống bên dưới trang để nút Chatbot nổi và bottom bar di động không che khuất */
 .page-content {
-  padding-bottom: 90px !important;
+  padding-bottom: 95px !important;
 }
 
 /* Banner Trạm Quét Barcode IoT */
@@ -153,7 +161,7 @@
 .vt-col-unit { min-width: 90px; white-space: nowrap; }
 .vt-col-qty { min-width: 100px; }
 .vt-col-min { min-width: 100px; }
-.vt-col-price { min-width: 120px; font-family: 'Segoe UI', monospace; }
+.vt-col-price { min-width: 120px; }
 .vt-col-loc { min-width: 95px; }
 .vt-col-status { min-width: 115px; }
 .vt-col-actions { min-width: 95px; }
@@ -170,14 +178,12 @@
 .vt-sku-code {
   font-weight: 700;
   color: var(--vt-primary);
-  font-family: monospace;
 }
 .vt-barcode-code {
   color: var(--vt-barcode-color);
   font-weight: 600;
   font-size: 11.5px;
   display: block;
-  font-family: monospace;
 }
 
 /* 2. NÚT THAO TÁC ICON & GHOST BUTTON */
@@ -349,13 +355,101 @@
   border: 2px solid #0284c7 !important;
 }
 
-/* Responsive tinh chỉnh */
-@media (max-width: 768px) {
+/* ==============================================================================
+ * TỐI ƯU HÓA ĐẶC BIỆT CHO ĐIỆN THOẠI & TABLET (RESPONSIVE MOBILE FIRST)
+ * ============================================================================== */
+@media (max-width: 991px) {
+  /* Tự động chuyển bảng sang dạng danh sách thẻ Card thân thiện với màn hình cảm ứng */
+  .vt-table-wrapper {
+    display: none !important;
+  }
+
+  .inventory-mobile-list {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobile-item-card {
+    background: #ffffff;
+    border: 1px solid var(--vt-border);
+    border-radius: var(--vt-radius);
+    padding: 14px;
+    box-shadow: var(--vt-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobile-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--vt-border);
+    padding-bottom: 8px;
+  }
+
+  .mobile-item-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--vt-text-main);
+    margin: 2px 0;
+  }
+
+  .mobile-item-sub {
+    font-size: 12.5px;
+    color: var(--vt-text-muted);
+  }
+
+  .mobile-item-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  .mobile-item-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
   .vt-toolbar-container {
     padding: 12px;
+    gap: 10px;
   }
+
+  .vt-field-group {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
   .vt-actions-group {
     width: 100%;
+    display: flex;
     justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  .vt-actions-group button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .vt-pagination-bar {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+}
+
+@media (min-width: 992px) {
+  .inventory-mobile-list {
+    display: none !important;
   }
 }

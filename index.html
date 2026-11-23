@@ -4,10 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Kho - Tổng Quan & Cảnh Báo Tồn Kho</title>
+  <!-- Nhúng phông chữ Roboto và Stylesheets -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/common.css">
   <link rel="stylesheet" href="assets/css/index.css">
 </head>
-<body>
+<body class="page-dashboard">
   <div class="app-layout">
     <!-- Sidebar component -->
     <div id="sidebar-container"></div>
@@ -17,7 +21,7 @@
       <div id="header-container"></div>
 
       <main class="page-content">
-        <!-- 4 KPI CARDS -->
+        <!-- 4 KPI CARDS TỰ CO GIÃN GRID CHỐNG TRÀN -->
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-info">
@@ -52,26 +56,34 @@
           </div>
         </div>
 
-        <!-- SƠ ĐỒ BẢN ĐỒ KỆ KHO THỜI GIAN THỰC (ĐƯA LÊN TRÊN ĐỂ DỄ QUAN SÁT) -->
+        <!-- SƠ ĐỒ BẢN ĐỒ KỆ KHO THỜI GIAN THỰC (AUTO-FILL MINMAX 220PX) -->
         <div class="card" style="margin-bottom: 20px;">
           <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
             <div>
               <h3 class="card-title">🗺️ Sơ Đồ Mặt Bằng Kệ Kho Thông Minh (IoT Rack Heatmap)</h3>
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Trạng thái thời gian thực theo vị trí kệ (Bấm vào kệ để nhập hàng nhanh):</p>
+              <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px; margin-bottom: 0;">
+                Trạng thái thời gian thực theo vị trí kệ (Bấm vào kệ để nhập hàng nhanh):
+              </p>
             </div>
-            <div style="display: flex; gap: 14px; font-size: 12px; align-items: center;">
-              <span><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 2px; margin-right: 4px;"></span>Còn hàng</span>
-              <span><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 2px; margin-right: 4px;"></span>Sắp hết</span>
-              <span><span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 2px; margin-right: 4px;"></span>Hết hàng / Trống</span>
+            <div style="display: flex; gap: 14px; font-size: 12px; align-items: center; flex-wrap: wrap;">
+              <span style="display: flex; align-items: center; gap: 4px;">
+                <span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 2px;"></span>Còn hàng
+              </span>
+              <span style="display: flex; align-items: center; gap: 4px;">
+                <span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 2px;"></span>Sắp hết
+              </span>
+              <span style="display: flex; align-items: center; gap: 4px;">
+                <span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 2px;"></span>Hết hàng / Trống
+              </span>
             </div>
           </div>
-          <div class="rack-grid" id="rack-heatmap-grid" style="margin-top: 8px;">
+          <div class="rack-grid" id="rack-heatmap-grid">
             <!-- JS render các ô kệ hàng -->
           </div>
         </div>
 
         <div class="dashboard-split-grid">
-          <!-- BẢNG CẢNH BÁO NGUY CẤP (THU NHỎ GỌN GÀNG, CÓ SCROLLBAR MƯỢT) -->
+          <!-- BẢNG CẢNH BÁO NGUY CẤP (TỐI ƯU MAX-HEIGHT 60VH, STICKY HEADER, WHITE-SPACE NOWRAP) -->
           <div class="card" style="margin-bottom: 0;">
             <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
               <h3 class="card-title" style="font-size: 15px;">⚠️ Danh Sách Vật Tư Sắp Hết Hoặc Dưới Định Mức Tối Thiểu</h3>
@@ -79,17 +91,17 @@
             </div>
 
             <!-- CHẾ ĐỘ XEM BẢNG CHO DESKTOP -->
-            <div class="table-responsive urgent-desktop-table" style="max-height: 275px; overflow-y: auto;">
-              <table class="table" style="font-size: 12.5px;">
-                <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 2;">
+            <div class="table-responsive urgent-desktop-table urgent-table-container">
+              <table class="urgent-table">
+                <thead>
                   <tr>
-                    <th>Mã SKU</th>
-                    <th>Tên Vật Tư</th>
-                    <th>Kệ</th>
-                    <th>Tồn Kho</th>
-                    <th>Định Mức</th>
-                    <th>Trạng Thái</th>
-                    <th style="text-align: right;">Thao Tác</th>
+                    <th class="urgent-col-sku">Mã SKU</th>
+                    <th class="urgent-col-name">Tên Vật Tư</th>
+                    <th class="urgent-col-rack">Vị Trí Kệ</th>
+                    <th class="urgent-col-qty">Tồn Kho</th>
+                    <th class="urgent-col-min">Định Mức</th>
+                    <th class="urgent-col-status">Trạng Thái</th>
+                    <th class="urgent-col-actions">Thao Tác</th>
                   </tr>
                 </thead>
                 <tbody id="urgent-table-body">
@@ -98,13 +110,13 @@
               </table>
             </div>
 
-            <!-- CHẾ ĐỘ XEM THẺ CHO SMARTPHONE (KHÔNG BỊ CẮT CỘT, DỄ BẤM NHẬP HÀNG) -->
+            <!-- CHẾ ĐỘ XEM THẺ CHO SMARTPHONE -->
             <div class="urgent-mobile-list" id="urgent-mobile-list">
               <!-- Dữ liệu JS render -->
             </div>
           </div>
 
-          <!-- BIỂU ĐỒ TRÒN TỶ LỆ CƠ CẤU TỒN KHO (HTML5 CANVAS REALTIME) -->
+          <!-- BIỂU ĐỒ TRÒN TỶ LỆ CƠ CẤU TỒN KHO -->
           <div class="card donut-card" style="margin-bottom: 0;">
             <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
               <h3 class="card-title" style="font-size: 15px;">📊 Phân Bổ Tồn Kho</h3>
