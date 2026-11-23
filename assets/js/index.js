@@ -1,13 +1,26 @@
 /**
  * ==============================================================================
  * PHỤ TRÁCH: MEMBER 2 - TRANG CHỦ & CẢNH BÁO TỒN KHO (index.js)
- * Nhiệm vụ: Tính toán KPI, lọc hàng dưới định mức, render nhãn Đỏ/Vàng, vẽ Donut Chart
+ * Tinh chỉnh Senior Frontend: Đồng bộ format tiền tệ Intl.NumberFormat,
+ * Bảng cảnh báo sticky header, line-clamp tên vật tư, tính toán trạng thái chuẩn.
  * ==============================================================================
  */
 
+// Định dạng tiền tệ VND chuẩn
+const vndFormatter = new Intl.NumberFormat('vi-VN', {
+  style: 'currency',
+  currency: 'VND',
+  maximumFractionDigits: 0
+});
+
+// Định dạng số chuẩn
+const qtyFormatter = new Intl.NumberFormat('vi-VN');
+
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Khởi tạo Layout chung
-  initLayout('index');
+  if (typeof initLayout === 'function') {
+    initLayout('index');
+  }
 
   // 2. Tải và render dữ liệu
   loadDashboardData();
@@ -32,34 +45,45 @@ function loadDashboardData() {
   const urgentItems = [];
 
   items.forEach(item => {
-    const qty = Number(item.quantity);
-    const min = Number(item.minThreshold);
+    const qty = Number(item.quantity) || 0;
+    const min = Number(item.minThreshold) || 0;
     totalValue += qty * Number(item.priceImport || 0);
 
     const status = DB.getItemStatus(qty, min);
 
     if (status.code === 'OUT') {
       outOfStockCount++;
-      urgentItems.push({ ...item, status });
+      urgentItems.push({ ...item, status, qty, min });
     } else if (status.code === 'LOW') {
       lowStockCount++;
-      urgentItems.push({ ...item, status });
+      urgentItems.push({ ...item, status, qty, min });
     } else {
       inStockCount++;
     }
   });
 
   // Render KPIs
-  document.getElementById('kpi-total-items').textContent = totalItems;
-  document.getElementById('kpi-total-value').textContent = DB.formatCurrency(totalValue);
-  document.getElementById('kpi-out-stock').textContent = outOfStockCount;
-  document.getElementById('kpi-low-stock').textContent = lowStockCount;
+  const elTotalItems = document.getElementById('kpi-total-items');
+  const elTotalValue = document.getElementById('kpi-total-value');
+  const elOutStock = document.getElementById('kpi-out-stock');
+  const elLowStock = document.getElementById('kpi-low-stock');
 
-  document.getElementById('legend-in-stock').textContent = inStockCount;
-  document.getElementById('legend-low-stock').textContent = lowStockCount;
-  document.getElementById('legend-out-stock').textContent = outOfStockCount;
+  if (elTotalItems) elTotalItems.textContent = qtyFormatter.format(totalItems);
+  if (elTotalValue) elTotalValue.textContent = vndFormatter.format(totalValue);
+  if (elOutStock) elOutStock.textContent = qtyFormatter.format(outOfStockCount);
+  if (elLowStock) elLowStock.textContent = qtyFormatter.format(lowStockCount);
 
-  document.getElementById('warning-count-badge').textContent = `${urgentItems.length} mặt hàng nguy cấp`;
+  const elLegendIn = document.getElementById('legend-in-stock');
+  const elLegendLow = document.getElementById('legend-low-stock');
+  const elLegendOut = document.getElementById('legend-out-stock');
+  if (elLegendIn) elLegendIn.textContent = qtyFormatter.format(inStockCount);
+  if (elLegendLow) elLegendLow.textContent = qtyFormatter.format(lowStockCount);
+  if (elLegendOut) elLegendOut.textContent = qtyFormatter.format(outOfStockCount);
+
+  const elWarningBadge = document.getElementById('warning-count-badge');
+  if (elWarningBadge) {
+    elWarningBadge.textContent = `${urgentItems.length} mặt hàng nguy cấp`;
+  }
 
   // Render Bảng Cảnh Báo Nguy Cấp
   renderUrgentTable(urgentItems);
@@ -78,26 +102,42 @@ function renderUrgentTable(urgentItems) {
   // 1. Render Bảng Desktop
   if (tbody) {
     if (urgentItems.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 24px; color: var(--success); font-weight: 500;">🎉 Tuyệt vời! Hiện tại không có mặt hàng nào dưới định mức an toàn.</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center; padding: 32px; color: var(--success); font-weight: 600;">
+            🎉 Tuyệt vời! Hiện tại không có mặt hàng nào dưới định mức an toàn.
+          </td>
+        </tr>
+      `;
     } else {
       tbody.innerHTML = urgentItems.map(item => `
         <tr>
-          <td><strong>${item.id}</strong></td>
-          <td>
-            <div><strong>${item.name}</strong></div>
-            <small style="color: var(--text-muted);">${item.category} • ${item.warehouse}</small>
+          <td class="urgent-col-sku">
+            <span>${item.id}</span>
           </td>
-          <td><code>${item.location || 'N/A'}</code></td>
-          <td><strong style="color: ${item.status.colorHex}; font-size: 15px;">${item.quantity}</strong> ${item.unit}</td>
-          <td>${item.minThreshold} ${item.unit}</td>
-          <td>
-            <span class="badge ${item.status.badgeClass}">
+          <td class="urgent-col-name">
+            <strong title="${item.name}">${item.name}</strong>
+            <div class="urgent-item-sub">${item.category} • ${item.warehouse}</div>
+          </td>
+          <td class="urgent-col-rack">
+            <code>${item.location || 'N/A'}</code>
+          </td>
+          <td class="urgent-col-qty">
+            <strong style="color: ${item.status.colorHex}; font-size: 14.5px;">${qtyFormatter.format(item.quantity)}</strong>
+            <span style="font-size: 11.5px; color: var(--text-muted); margin-left: 3px;">${item.unit}</span>
+          </td>
+          <td class="urgent-col-min">
+            <strong>${qtyFormatter.format(item.minThreshold)}</strong>
+            <span style="font-size: 11.5px; color: var(--text-muted); margin-left: 3px;">${item.unit}</span>
+          </td>
+          <td class="urgent-col-status">
+            <span class="badge badge-pill-status ${item.status.badgeClass}">
               ${item.status.label}
             </span>
           </td>
-          <td>
-            <button class="btn btn-primary btn-sm" onclick="quickRestock('${item.id}')">
-              ➕ Nhập hàng ngay
+          <td class="urgent-col-actions">
+            <button type="button" class="btn btn-primary btn-restock-now" onclick="quickRestock('${item.id}')" aria-label="Nhập hàng ngay cho ${item.id}">
+              ➕ Nhập hàng
             </button>
           </td>
         </tr>
@@ -105,7 +145,7 @@ function renderUrgentTable(urgentItems) {
     }
   }
 
-  // 2. Render Danh Sách Thẻ Tối Ưu Cho Smartphone (Tránh tràn bảng, dễ thao tác ngón tay)
+  // 2. Render Danh Sách Thẻ Tối Ưu Cho Smartphone
   if (mobileList) {
     if (urgentItems.length === 0) {
       mobileList.innerHTML = `
@@ -119,20 +159,20 @@ function renderUrgentTable(urgentItems) {
           <div class="mobile-card-header">
             <div style="display:flex; align-items:center; gap:6px;">
               <span class="mobile-sku-badge">${item.id}</span>
-              <span class="badge ${item.status.badgeClass}">${item.status.label}</span>
+              <span class="badge badge-pill-status ${item.status.badgeClass}">${item.status.label}</span>
             </div>
             <span class="mobile-location-tag">📍 ${item.location || 'Kệ N/A'}</span>
           </div>
 
-          <h4 class="mobile-item-title">${item.name}</h4>
+          <h4 class="mobile-item-title" title="${item.name}">${item.name}</h4>
           <div class="mobile-item-sub">${item.category} • ${item.warehouse}</div>
 
           <div class="mobile-item-meta-grid">
-            <div>Tồn kho: <strong style="color: ${item.status.colorHex}; font-size:15px;">${item.quantity} ${item.unit}</strong></div>
-            <div>Định mức tối thiểu: <strong>${item.minThreshold} ${item.unit}</strong></div>
+            <div>Tồn kho: <strong style="color: ${item.status.colorHex}; font-size:14.5px;">${qtyFormatter.format(item.quantity)} ${item.unit}</strong></div>
+            <div>Định mức: <strong>${qtyFormatter.format(item.minThreshold)} ${item.unit}</strong></div>
           </div>
 
-          <button class="btn btn-primary" style="width:100%; min-height:42px; font-weight:600;" onclick="quickRestock('${item.id}')">
+          <button type="button" class="btn btn-primary" style="width:100%; min-height:40px; font-weight:600; margin-top: 6px;" onclick="quickRestock('${item.id}')" aria-label="Nhập hàng ${item.id}">
             ➕ Nhập hàng ngay
           </button>
         </div>
@@ -145,19 +185,16 @@ function renderUrgentTable(urgentItems) {
 let donutAnimId = null;
 let currentDonutHover = -1;
 
-// Vẽ Donut Chart bằng HTML5 Canvas Hiện Đại với Hoạt Họa & Tương Tác Tooltip
 function renderDonutChart(inStock, lowStock, outStock) {
   const canvas = document.getElementById('donutChart');
   if (!canvas) return;
 
   const total = inStock + lowStock + outStock;
 
-  // Tính tỷ lệ phần trăm
   const pctIn = total > 0 ? Math.round((inStock / total) * 100) : 0;
   const pctLow = total > 0 ? Math.round((lowStock / total) * 100) : 0;
   const pctOut = total > 0 ? Math.max(0, 100 - pctIn - pctLow) : 0;
 
-  // Cập nhật nhãn và thanh tỷ lệ an toàn
   const elPctIn = document.getElementById('pct-in-stock');
   const elPctLow = document.getElementById('pct-low-stock');
   const elPctOut = document.getElementById('pct-out-stock');
@@ -172,7 +209,6 @@ function renderDonutChart(inStock, lowStock, outStock) {
   if (barLow) barLow.style.width = `${pctLow}%`;
   if (barOut) barOut.style.width = `${pctOut}%`;
 
-  // Thiết lập Canvas HiDPI cho màn hình Retina & Smartphone siêu sắc nét
   const dpr = window.devicePixelRatio || 1;
   const displayWidth = 220;
   const displayHeight = 220;
@@ -195,18 +231,21 @@ function renderDonutChart(inStock, lowStock, outStock) {
   const outerRadius = 88;
   const innerRadius = 58;
 
-  // Hủy animation cũ nếu có
   if (donutAnimId) cancelAnimationFrame(donutAnimId);
 
-  const startTime = performance.now();
-  const animDuration = 650; // ms
+  let animProgress = 0;
+  const animDuration = 600;
+  let animStartTime = null;
 
-  function drawFrame(now) {
-    const elapsed = now - startTime;
-    const progress = Math.min(1, elapsed / animDuration);
-    const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+  function drawFrame(timestamp) {
+    if (!animStartTime) animStartTime = timestamp;
+    const elapsed = timestamp - animStartTime;
+    animProgress = Math.min(1, elapsed / animDuration);
+    const easeOut = 1 - Math.pow(1 - animProgress, 3);
 
     ctx.clearRect(0, 0, displayWidth, displayHeight);
+
+    let startAngle = -Math.PI / 2;
 
     if (total === 0) {
       ctx.beginPath();
@@ -214,84 +253,83 @@ function renderDonutChart(inStock, lowStock, outStock) {
       ctx.arc(centerX, centerY, innerRadius, Math.PI * 2, 0, true);
       ctx.fillStyle = '#e2e8f0';
       ctx.fill();
-      return;
+    } else {
+      data.forEach((slice, idx) => {
+        if (slice.value === 0) return;
+        const sliceAngle = (slice.value / total) * (Math.PI * 2) * easeOut;
+        const endAngle = startAngle + sliceAngle;
+        const isHovered = currentDonutHover === idx;
+        const curOuter = isHovered ? outerRadius + 5 : outerRadius;
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, curOuter, startAngle, endAngle);
+        ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = isHovered ? slice.hoverColor : slice.color;
+        ctx.shadowColor = isHovered ? 'rgba(0,0,0,0.2)' : 'transparent';
+        ctx.shadowBlur = isHovered ? 8 : 0;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        startAngle = endAngle;
+      });
     }
 
-    let startAngle = -Math.PI / 2;
-    const gapAngle = (total > 1 ? 0.04 : 0); // Khoảng hở phân đoạn hiện đại
-
-    data.forEach((slice, idx) => {
-      if (slice.value === 0) return;
-      const sliceAngle = (slice.value / total) * 2 * Math.PI * ease;
-      const drawSliceAngle = Math.max(0, sliceAngle - gapAngle);
-
-      const isHovered = currentDonutHover === idx;
-      const currentOuter = isHovered ? outerRadius + 4 : outerRadius;
-      const currentInner = isHovered ? innerRadius - 2 : innerRadius;
-
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, currentOuter, startAngle + gapAngle / 2, startAngle + gapAngle / 2 + drawSliceAngle);
-      ctx.arc(centerX, centerY, currentInner, startAngle + gapAngle / 2 + drawSliceAngle, startAngle + gapAngle / 2, true);
-      ctx.closePath();
-
-      ctx.fillStyle = isHovered ? slice.hoverColor : slice.color;
-      ctx.shadowColor = isHovered ? slice.color : 'transparent';
-      ctx.shadowBlur = isHovered ? 12 : 0;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      slice.startAngle = startAngle;
-      slice.endAngle = startAngle + sliceAngle;
-      startAngle += sliceAngle;
-    });
-
-    // Vẽ Vòng Tròn Tâm
+    // Tâm tròn hiển thị số liệu
     ctx.beginPath();
-    ctx.arc(centerX, centerY, innerRadius - 4, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, innerRadius - 2, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff';
     ctx.fill();
 
-    // Hiển thị số lượng động ở giữa
-    const currentCount = Math.round(total * ease);
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(currentCount, centerX, centerY - 6);
 
-    ctx.font = '500 11.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillStyle = '#64748b';
-    ctx.fillText('Mặt hàng', centerX, centerY + 15);
+    if (currentDonutHover >= 0 && currentDonutHover < data.length) {
+      const active = data[currentDonutHover];
+      ctx.font = 'bold 20px Roboto, sans-serif';
+      ctx.fillStyle = active.color;
+      ctx.fillText(`${active.pct}%`, centerX, centerY - 6);
 
-    if (progress < 1) {
+      ctx.font = '500 11.5px Roboto, sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText(active.label, centerX, centerY + 14);
+    } else {
+      ctx.font = 'bold 22px Roboto, sans-serif';
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText(qtyFormatter.format(total), centerX, centerY - 6);
+
+      ctx.font = '500 11.5px Roboto, sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('Tổng mã', centerX, centerY + 14);
+    }
+
+    if (animProgress < 1) {
       donutAnimId = requestAnimationFrame(drawFrame);
     }
   }
 
   donutAnimId = requestAnimationFrame(drawFrame);
 
-  // Xử lý tương tác Hover & Touch Tooltip trực tiếp trên Canvas
   function handlePointer(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const x = clientX - rect.left - centerX;
+    const y = clientY - rect.top - centerY;
+    const dist = Math.sqrt(x * x + y * y);
 
-    const dx = x - centerX;
-    const dy = y - centerY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist >= innerRadius && dist <= outerRadius + 8) {
+      let angle = Math.atan2(y, x);
+      if (angle < -Math.PI / 2) angle += Math.PI * 2;
+      const normalizedAngle = angle + Math.PI / 2;
 
-    if (dist >= innerRadius && dist <= outerRadius + 6) {
-      let angle = Math.atan2(dy, dx);
-      if (angle < -Math.PI / 2) angle += 2 * Math.PI;
-
+      let acc = 0;
       let found = -1;
-      let curAngle = -Math.PI / 2;
       data.forEach((slice, idx) => {
-        const sliceAngle = (slice.value / total) * 2 * Math.PI;
-        if (angle >= curAngle && angle <= curAngle + sliceAngle) {
+        if (slice.value === 0) return;
+        const sliceAngle = (slice.value / total) * (Math.PI * 2);
+        if (normalizedAngle >= acc && normalizedAngle <= acc + sliceAngle) {
           found = idx;
         }
-        curAngle += sliceAngle;
+        acc += sliceAngle;
       });
 
       if (found !== currentDonutHover) {
@@ -330,7 +368,7 @@ function renderRackHeatmap(items) {
     else if (status.code === 'LOW') statusClass = 'status-low';
 
     return `
-      <div class="rack-cell ${statusClass}" onclick="quickRestock('${item.id}')" title="Kệ: ${item.location} - Nhấn để nhập hàng">
+      <div class="rack-cell ${statusClass}" onclick="quickRestock('${item.id}')" title="Kệ: ${item.location || 'N/A'} - Nhấn để nhập hàng nhanh" tabindex="0" role="button" aria-label="Kệ ${item.location || 'N/A'} mặt hàng ${item.name}">
         <div class="rack-header-row">
           <span class="rack-code">📍 ${item.location || 'Kệ N/A'}</span>
           <span class="badge ${status.badgeClass} rack-badge">${status.label}</span>
@@ -338,9 +376,18 @@ function renderRackHeatmap(items) {
         <div class="rack-item-name" title="${item.name}">${item.name}</div>
         <div class="rack-qty-row">
           <span class="rack-qty-label">Tồn kho:</span>
-          <span class="rack-qty-val"><strong style="color:${status.colorHex};">${item.quantity}</strong> ${item.unit}</span>
+          <span class="rack-qty-val">
+            <strong style="color:${status.colorHex}; font-size: 13.5px;">${qtyFormatter.format(item.quantity)}</strong>
+            <span style="font-size: 11px; color: var(--text-muted); margin-left: 2px;">${item.unit}</span>
+          </span>
         </div>
       </div>
     `;
   }).join('');
+}
+
+// Điều hướng nhanh sang trang Nhập hàng (operations.html)
+function quickRestock(itemId) {
+  sessionStorage.setItem('QUICK_RESTOCK_ITEM_ID', itemId);
+  window.location.href = 'operations.html';
 }
