@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Kho - Quản Lý Danh Mục Vật Tư</title>
+  <!-- Nhúng stylesheet chuẩn của dự án -->
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/inventory.css">
+</head>
+<body class="page-inventory">
+  <div class="app-layout">
+    <!-- Tự động nạp bởi layout.js -->
+    <div id="sidebar-container"></div>
+
+    <div class="app-main">
+      <!-- Tự động nạp bởi layout.js -->
+      <div id="header-container"></div>
+
+      <main class="page-content">
+        <!-- BANNER TRẠM QUÉT IOT THỜI GIAN THỰC -->
+        <div class="iot-banner-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="width: 48px; height: 48px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                📷
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h3 style="font-size: 16px; margin: 0; color: #fff;">TRẠM QUÉT MÃ VẠCH IOT THỜI GIAN THỰC</h3>
+                  <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; font-size: 11px;">
+                    <span class="iot-pulse-dot" style="margin-right: 4px;"></span> Online Ready
+                  </span>
+                </div>
+                <p style="font-size: 12.5px; color: #94a3b8; margin-top: 4px; margin-bottom: 0;">
+                  Bấm một nút bên dưới để "Bắn mã quét mẫu" hoặc mở Trạm Laser toàn màn hình:
+                </p>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-sm" style="background: #1e293b; color: #38bdf8; border: 1px solid #38bdf8;" onclick="triggerScanItem('8931234567890')">
+                🔫 Bắn mã: Thép Hòa Phát
+              </button>
+              <button class="btn btn-sm" style="background: #1e293b; color: #f87171; border: 1px solid #f87171;" onclick="triggerScanItem('8931234567891')">
+                🔫 Bắn mã: Xi măng Vicem (Tồn: 0)
+              </button>
+              <button class="btn btn-sm" style="background: #1e293b; color: #fbbf24; border: 1px solid #fbbf24;" onclick="triggerScanItem('8931234567892')">
+                🔫 Bắn mã: Cáp Cadivi
+              </button>
+              <button class="btn btn-sm" style="background: #1e293b; color: #38bdf8; border: 1px solid #38bdf8;" onclick="triggerScanItem('8931234567896')">
+                🔫 Bắn mã: Aptomat Pana
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="openIoTScannerModal()">
+                ⚡ Mở Trạm Laser Chi Tiết
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 0; background: transparent; border: none; box-shadow: none;">
+          <!-- 3. BỘ LỌC VÀ TÌM KIẾM TỨC THỜI CĂN ĐỀU, FLEX-WRAP -->
+          <div class="vt-toolbar-container">
+            <div class="vt-field-group">
+              <label for="search-input">🔍 Tìm kiếm nhanh</label>
+              <input type="text" id="search-input" class="form-control" placeholder="Tên, SKU, Barcode, Kệ..." autocomplete="off">
+            </div>
+
+            <div class="vt-field-group">
+              <label for="barcode-input">📷 Quét mã vạch (Enter)</label>
+              <input type="text" id="barcode-input" class="form-control" placeholder="Quét / Nhập mã và Enter...">
+            </div>
+
+            <div class="vt-field-group" style="flex: 0 1 180px;">
+              <label for="filter-warehouse">Kho lưu trữ</label>
+              <select id="filter-warehouse" class="form-control">
+                <option value="">-- Tất cả kho --</option>
+                <option value="Kho A - Tổng kho">Kho A - Tổng kho</option>
+                <option value="Kho B - Chi nhánh 1">Kho B - Chi nhánh 1</option>
+              </select>
+            </div>
+
+            <div class="vt-field-group" style="flex: 0 1 180px;">
+              <label for="filter-status">Trạng thái tồn</label>
+              <select id="filter-status" class="form-control">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="OUT">Hết hàng (Đỏ)</option>
+                <option value="LOW">Sắp hết (Vàng)</option>
+                <option value="IN_STOCK">Còn hàng (Xanh)</option>
+              </select>
+            </div>
+
+            <div class="vt-field-group" style="flex: 0 1 120px;">
+              <label for="filter-page-size">Hiển thị / trang</label>
+              <select id="filter-page-size" class="form-control">
+                <option value="10" selected>10 dòng</option>
+                <option value="20">20 dòng</option>
+                <option value="50">50 dòng</option>
+              </select>
+            </div>
+
+            <div class="vt-actions-group">
+              <button type="button" class="btn btn-outline" onclick="resetFilters()" title="Đặt lại bộ lọc về mặc định" aria-label="Xóa bộ lọc">
+                🔄 Xóa bộ lọc
+              </button>
+              <button type="button" class="btn btn-primary" onclick="openAddModal()" aria-label="Thêm vật tư mới">
+                ➕ Thêm Vật Tư Mới
+              </button>
+            </div>
+          </div>
+
+          <!-- 1. BẢNG DANH MỤC VẬT TƯ CHO DESKTOP CÓ STICKY HEADER & SORT -->
+          <div class="vt-table-wrapper">
+            <table class="vt-table">
+              <thead>
+                <tr>
+                  <th class="vt-col-sku" data-sort="id" onclick="handleSort('id')" title="Bấm để sắp xếp theo Mã SKU">
+                    Mã SKU / Barcode <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-name" data-sort="name" onclick="handleSort('name')" title="Bấm để sắp xếp theo Tên">
+                    Tên Vật Tư <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-cat" data-sort="category" onclick="handleSort('category')" title="Bấm để sắp xếp theo Danh mục">
+                    Danh Mục <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-wh" data-sort="warehouse" onclick="handleSort('warehouse')" title="Bấm để sắp xếp theo Kho">
+                    Kho Lưu Trữ <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-unit" data-sort="unit" onclick="handleSort('unit')">
+                    Đơn Vị <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-qty vt-text-right" data-sort="quantity" onclick="handleSort('quantity')" title="Bấm để sắp xếp theo Số lượng tồn">
+                    Tồn Kho <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-min vt-text-right" data-sort="minThreshold" onclick="handleSort('minThreshold')" title="Bấm để sắp xếp theo Định mức">
+                    Định Mức Min <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-price vt-text-right" data-sort="priceExport" onclick="handleSort('priceExport')" title="Bấm để sắp xếp theo Giá xuất">
+                    Giá Xuất <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-loc" data-sort="location" onclick="handleSort('location')">
+                    Vị Trí <span class="vt-sort-icon">⇅</span>
+                  </th>
+                  <th class="vt-col-status">
+                    Trạng Thái
+                  </th>
+                  <th class="vt-col-actions vt-text-right no-sort">
+                    Thao Tác
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body">
+                <!-- Tự động nạp bởi inventory.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 5. THANH PHÂN TRANG VÀ THÔNG TIN DÒNG -->
+          <div class="vt-pagination-bar">
+            <div class="vt-pagination-info" id="record-count-text">
+              Đang tải danh sách vật tư...
+            </div>
+            <div class="vt-pagination-controls" id="vt-pagination-controls">
+              <!-- Render động nút phân trang -->
+            </div>
+          </div>
+
+          <!-- DANH SÁCH DẠNG THẺ CHO MÀN HÌNH NHỎ / MOBILE -->
+          <div class="inventory-mobile-list" id="inventory-mobile-list" style="margin-top: 16px;">
+            <!-- Render động bởi inventory.js -->
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- 7. MODAL THÊM / SỬA VẬT TƯ (HTML5 VALIDATION & ERROR MESSAGES) -->
+  <div class="modal-overlay" id="item-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Thêm Vật Tư Mới</h3>
+        <button type="button" class="modal-close" onclick="closeModal()" aria-label="Đóng cửa sổ">&times;</button>
+      </div>
+      <form id="item-form" onsubmit="handleSaveItem(event)" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="form-item-id">
+
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label" for="form-sku">Mã SKU (*)</label>
+              <input type="text" id="form-sku" class="form-control" placeholder="Nhập mã SKU (VD: VT099)">
+              <div class="vt-error-msg"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-barcode">Mã vạch Barcode (*)</label>
+              <input type="text" id="form-barcode" class="form-control" placeholder="VD: 8931234567890">
+              <div class="vt-error-msg"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="form-name">Tên Vật Tư (*)</label>
+            <input type="text" id="form-name" class="form-control" placeholder="Nhập tên vật tư...">
+            <div class="vt-error-msg"></div>
+          </div>
+
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label" for="form-category">Danh Mục (*)</label>
+              <select id="form-category" class="form-control">
+                <option value="">-- Chọn danh mục --</option>
+                <option value="Vật liệu xây dựng">Vật liệu xây dựng</option>
+                <option value="Thiết bị điện">Thiết bị điện</option>
+                <option value="Vật tư cấp thoát nước">Vật tư cấp thoát nước</option>
+                <option value="Vật liệu hoàn thiện">Vật liệu hoàn thiện</option>
+                <option value="Sơn & Hóa chất">Sơn & Hóa chất</option>
+                <option value="Cơ khí & Kim khí">Cơ khí & Kim khí</option>
+                <option value="Thiết bị chiếu sáng">Thiết bị chiếu sáng</option>
+              </select>
+              <div class="vt-error-msg"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-warehouse">Kho Lưu Trữ (*)</label>
+              <select id="form-warehouse" class="form-control">
+                <option value="">-- Chọn kho lưu trữ --</option>
+                <option value="Kho A - Tổng kho">Kho A - Tổng kho</option>
+                <option value="Kho B - Chi nhánh 1">Kho B - Chi nhánh 1</option>
+              </select>
+              <div class="vt-error-msg"></div>
+            </div>
+          </div>
+
+          <div class="form-row-3col">
+            <div class="form-group">
+              <label class="form-label" for="form-unit">Đơn Vị Tính (*)</label>
+              <input type="text" id="form-unit" class="form-control" placeholder="Bao, Cây, Cuộn...">
+              <div class="vt-error-msg"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-quantity">Số Lượng Tồn Ban Đầu</label>
+              <input type="number" id="form-quantity" class="form-control" min="0" step="1" value="0">
+              <div class="vt-error-msg"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-min">Định Mức Min (*)</label>
+              <input type="number" id="form-min" class="form-control" min="0" step="1" value="10">
+              <div class="vt-error-msg"></div>
+            </div>
+          </div>
+
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label" for="form-price-import">Giá Nhập (VNĐ)</label>
+              <input type="number" id="form-price-import" class="form-control" min="0" step="1000" value="100000">
+              <div class="vt-error-msg"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="form-price-export">Giá Xuất (VNĐ)</label>
+              <input type="number" id="form-price-export" class="form-control" min="0" step="1000" value="120000">
+              <div class="vt-error-msg"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="form-location">Vị Trí Kệ / Ô Chứa</label>
+            <input type="text" id="form-location" class="form-control" placeholder="VD: Kệ A1-02">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal()">Hủy Bỏ</button>
+          <button type="submit" class="btn btn-primary">Lưu Vật Tư</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Nạp scripts -->
+  <script src="assets/js/db.js"></script>
+  <script src="assets/js/layout.js"></script>
+  <script src="assets/js/inventory.js"></script>
+</body>
+</html>
