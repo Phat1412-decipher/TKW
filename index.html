@@ -3,85 +3,176 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Kho - Tổng Quan & Cảnh Báo Tồn Kho</title>
+  <meta name="theme-color" content="#0f172a">
+  <title>Smart Kho - Tổng Quan &amp; Cảnh Báo Tồn Kho</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/common.css">
   <link rel="stylesheet" href="assets/css/index.css">
 </head>
-<body>
+<body class="page-index">
+  <a href="#main-content" class="skip-link">Chuyển đến nội dung chính</a>
+
   <div class="app-layout">
-    <!-- Sidebar component -->
+    <!-- Tự động render bởi layout.js -->
     <div id="sidebar-container"></div>
 
     <div class="app-main">
-      <!-- Header component -->
+      <!-- Tự động render bởi layout.js -->
       <div id="header-container"></div>
 
-      <main class="page-content">
-        <!-- 4 KPI CARDS -->
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-info">
+      <main class="page-content" id="main-content">
+        <!-- 1. 4 THẺ KPI THỜI GIAN THỰC -->
+        <section class="kpi-grid" aria-label="Chỉ số hiệu suất kho thời gian thực">
+          <article class="kpi-card kpi-card-blue" data-filter-target="ALL" onclick="filterHeatmapByStatus('ALL')" title="Nhấn để xem toàn bộ 12 vị trí kệ kho">
+            <div class="kpi-top-row">
               <h4>Tổng Số Mặt Hàng</h4>
-              <div class="kpi-value" id="kpi-total-items">0</div>
+              <div class="kpi-icon kpi-blue" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                  <path d="m3.3 7 8.7 5 8.7-5"></path>
+                  <path d="M12 22V12"></path>
+                </svg>
+              </div>
             </div>
-            <div class="kpi-icon kpi-blue">📦</div>
-          </div>
-
-          <div class="kpi-card">
             <div class="kpi-info">
+              <div class="kpi-value tabular-nums" id="kpi-total-items" aria-live="polite">0</div>
+              <div class="kpi-meta" id="kpi-total-items-meta">12 vị trí kệ định danh IoT</div>
+            </div>
+          </article>
+
+          <article class="kpi-card kpi-card-green">
+            <div class="kpi-top-row">
               <h4>Giá Trị Tài Sản Kho</h4>
-              <div class="kpi-value" id="kpi-total-value">0 đ</div>
+              <div class="kpi-icon kpi-green" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="12" x="2" y="6" rx="2"></rect>
+                  <circle cx="12" cy="12" r="2"></circle>
+                  <path d="M6 12h.01M18 12h.01"></path>
+                </svg>
+              </div>
             </div>
-            <div class="kpi-icon kpi-green">💰</div>
-          </div>
-
-          <div class="kpi-card">
             <div class="kpi-info">
+              <div class="kpi-value tabular-nums" id="kpi-total-value" aria-live="polite">0 ₫</div>
+              <div class="kpi-meta" id="kpi-total-value-meta">Tính theo đơn giá nhập chuẩn</div>
+            </div>
+          </article>
+
+          <article class="kpi-card kpi-card-red" data-filter-target="OUT" onclick="filterHeatmapByStatus('OUT')" title="Nhấn để lọc các kệ đang hết hàng">
+            <div class="kpi-top-row">
               <h4>Báo Động: Hết Hàng</h4>
-              <div class="kpi-value" id="kpi-out-stock" style="color: var(--danger);">0</div>
+              <div class="kpi-icon kpi-red" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" x2="12" y1="8" y2="12"></line>
+                  <line x1="12" x2="12.01" y1="16" y2="16"></line>
+                </svg>
+              </div>
             </div>
-            <div class="kpi-icon kpi-red">🚨</div>
-          </div>
-
-          <div class="kpi-card">
             <div class="kpi-info">
+              <div class="kpi-value tabular-nums kpi-danger-text" id="kpi-out-stock" aria-live="polite">0</div>
+              <div class="kpi-meta" id="kpi-out-stock-meta">Tồn kho = 0 • Cần nhập khẩn</div>
+            </div>
+          </article>
+
+          <article class="kpi-card kpi-card-yellow" data-filter-target="LOW" onclick="filterHeatmapByStatus('LOW')" title="Nhấn để lọc các kệ sắp hết hàng">
+            <div class="kpi-top-row">
               <h4>Cảnh Báo: Sắp Hết</h4>
-              <div class="kpi-value" id="kpi-low-stock" style="color: var(--warning);">0</div>
+              <div class="kpi-icon kpi-yellow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <path d="M12 9v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg>
+              </div>
             </div>
-            <div class="kpi-icon kpi-yellow">⚠️</div>
-          </div>
-        </div>
+            <div class="kpi-info">
+              <div class="kpi-value tabular-nums kpi-warning-text" id="kpi-low-stock" aria-live="polite">0</div>
+              <div class="kpi-meta" id="kpi-low-stock-meta">Chạm hoặc dưới định mức an toàn</div>
+            </div>
+          </article>
+        </section>
 
-        <!-- SƠ ĐỒ BẢN ĐỒ KỆ KHO THỜI GIAN THỰC (ĐƯA LÊN TRÊN ĐỂ DỄ QUAN SÁT) -->
-        <div class="card" style="margin-bottom: 20px;">
-          <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
-            <div>
-              <h3 class="card-title">🗺️ Sơ Đồ Mặt Bằng Kệ Kho Thông Minh (IoT Rack Heatmap)</h3>
-              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Trạng thái thời gian thực theo vị trí kệ (Bấm vào kệ để nhập hàng nhanh):</p>
+        <!-- 2. SƠ ĐỒ MẶT BẰNG KỆ KHO THÔNG MINH (IOT RACK HEATMAP) -->
+        <section class="card heatmap-section-card" aria-labelledby="heatmap-title">
+          <div class="card-header heatmap-card-header">
+            <div class="heatmap-title-group">
+              <h3 class="card-title" id="heatmap-title">
+                <span class="title-icon-box" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="7" x="3" y="3" rx="1"></rect>
+                    <rect width="7" height="7" x="14" y="3" rx="1"></rect>
+                    <rect width="7" height="7" x="14" y="14" rx="1"></rect>
+                    <rect width="7" height="7" x="3" y="14" rx="1"></rect>
+                  </svg>
+                </span>
+                Sơ Đồ Mặt Bằng Kệ Kho Thông Minh (IoT Rack Heatmap)
+              </h3>
+              <p class="section-subtitle">
+                Giám sát 12 vị trí kệ theo thời gian thực — Nhấn trực tiếp vào ô kệ bất kỳ để lập phiếu nhập hàng nhanh
+              </p>
             </div>
-            <div style="display: flex; gap: 14px; font-size: 12px; align-items: center;">
-              <span><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 2px; margin-right: 4px;"></span>Còn hàng</span>
-              <span><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 2px; margin-right: 4px;"></span>Sắp hết</span>
-              <span><span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 2px; margin-right: 4px;"></span>Hết hàng / Trống</span>
-            </div>
-          </div>
-          <div class="rack-grid" id="rack-heatmap-grid" style="margin-top: 8px;">
-            <!-- JS render các ô kệ hàng -->
-          </div>
-        </div>
 
+            <div class="heatmap-controls-bar">
+              <div class="heatmap-filter-pills" role="group" aria-label="Lọc sơ đồ kệ theo trạng thái">
+                <button type="button" class="heatmap-filter-btn active" data-rack-filter="ALL" onclick="filterHeatmapByStatus('ALL')">
+                  <span>Tất cả</span> <span class="filter-count tabular-nums" id="rack-count-all">12</span>
+                </button>
+                <button type="button" class="heatmap-filter-btn filter-safe" data-rack-filter="IN_STOCK" onclick="filterHeatmapByStatus('IN_STOCK')">
+                  <span class="pill-label-wrap"><span class="legend-dot safe" aria-hidden="true"></span>Còn hàng</span>
+                  <span class="filter-count tabular-nums" id="rack-count-safe">0</span>
+                </button>
+                <button type="button" class="heatmap-filter-btn filter-low" data-rack-filter="LOW" onclick="filterHeatmapByStatus('LOW')">
+                  <span class="pill-label-wrap"><span class="legend-dot low" aria-hidden="true"></span>Sắp hết</span>
+                  <span class="filter-count tabular-nums" id="rack-count-low">0</span>
+                </button>
+                <button type="button" class="heatmap-filter-btn filter-out" data-rack-filter="OUT" onclick="filterHeatmapByStatus('OUT')">
+                  <span class="pill-label-wrap"><span class="legend-dot out" aria-hidden="true"></span>Hết hàng</span>
+                  <span class="filter-count tabular-nums" id="rack-count-out">0</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rack-grid" id="rack-heatmap-grid" role="list" aria-label="Danh sách 12 vị trí kệ kho thông minh">
+            <!-- JS render 12 ô kệ hàng -->
+          </div>
+        </section>
+
+        <!-- 3. KHUNG 2 CỘT: BẢNG CẢNH BÁO NGUY CẤP & BIỂU ĐỒ DONUT CANVAS -->
         <div class="dashboard-split-grid">
-          <!-- BẢNG CẢNH BÁO NGUY CẤP (THU NHỎ GỌN GÀNG, CÓ SCROLLBAR MƯỢT) -->
-          <div class="card" style="margin-bottom: 0;">
-            <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
-              <h3 class="card-title" style="font-size: 15px;">⚠️ Danh Sách Vật Tư Sắp Hết Hoặc Dưới Định Mức Tối Thiểu</h3>
-              <span class="badge badge-warning" id="warning-count-badge" style="font-size: 11px;">0 mục cần chú ý</span>
+          <!-- CỘT TRÁI: DANH SÁCH VẬT TƯ NGUY CẤP DƯỚI ĐỊNH MỨC -->
+          <section class="card urgent-section-card" aria-labelledby="urgent-title">
+            <div class="card-header urgent-card-header">
+              <div class="urgent-title-group">
+                <h3 class="card-title" id="urgent-title">
+                  <span class="title-icon-box warning-icon-box" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                      <line x1="12" x2="12" y1="9" y2="13"></line>
+                      <line x1="12" x2="12.01" y1="17" y2="17"></line>
+                    </svg>
+                  </span>
+                  Danh Sách Vật Tư Nguy Cấp Dưới Định Mức Tối Thiểu
+                </h3>
+                <p class="section-subtitle">Ưu tiên mặt hàng Hết hàng (Đỏ) và Sắp hết (Vàng) cần bổ sung ngay</p>
+              </div>
+
+              <div class="urgent-header-actions">
+                <div class="urgent-subfilter-group" role="group" aria-label="Lọc danh sách cảnh báo">
+                  <button type="button" class="urgent-filter-chip active" data-urgent-filter="ALL" onclick="filterUrgentList('ALL')">Tất cả</button>
+                  <button type="button" class="urgent-filter-chip chip-danger" data-urgent-filter="OUT" onclick="filterUrgentList('OUT')">Hết hàng</button>
+                  <button type="button" class="urgent-filter-chip chip-warning" data-urgent-filter="LOW" onclick="filterUrgentList('LOW')">Sắp hết</button>
+                </div>
+                <span class="badge badge-warning tabular-nums" id="warning-count-badge" aria-live="polite">0 mặt hàng nguy cấp</span>
+              </div>
             </div>
 
-            <!-- CHẾ ĐỘ XEM BẢNG CHO DESKTOP -->
-            <div class="table-responsive urgent-desktop-table" style="max-height: 275px; overflow-y: auto;">
-              <table class="table" style="font-size: 12.5px;">
-                <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 2;">
+            <!-- CHẾ ĐỘ XEM BẢNG CHO DESKTOP (MAX-HEIGHT 275PX, STICKY HEADER, SCROLLBAR MƯỢT) -->
+            <div class="table-responsive urgent-desktop-table">
+              <table class="table urgent-table">
+                <thead>
                   <tr>
                     <th>Mã SKU</th>
                     <th>Tên Vật Tư</th>
@@ -89,7 +180,7 @@
                     <th>Tồn Kho</th>
                     <th>Định Mức</th>
                     <th>Trạng Thái</th>
-                    <th style="text-align: right;">Thao Tác</th>
+                    <th class="text-right">Thao Tác</th>
                   </tr>
                 </thead>
                 <tbody id="urgent-table-body">
@@ -98,48 +189,72 @@
               </table>
             </div>
 
-            <!-- CHẾ ĐỘ XEM THẺ CHO SMARTPHONE (KHÔNG BỊ CẮT CỘT, DỄ BẤM NHẬP HÀNG) -->
+            <!-- CHẾ ĐỘ XEM THẺ APP CARD CHO SMARTPHONE (KHÔNG BỊ CẮT CỘT, DỄ CHẠM CẢM ỨNG) -->
             <div class="urgent-mobile-list" id="urgent-mobile-list">
               <!-- Dữ liệu JS render -->
             </div>
-          </div>
+          </section>
 
-          <!-- BIỂU ĐỒ TRÒN TỶ LỆ CƠ CẤU TỒN KHO (HTML5 CANVAS REALTIME) -->
-          <div class="card donut-card" style="margin-bottom: 0;">
-            <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
-              <h3 class="card-title" style="font-size: 15px;">📊 Phân Bổ Tồn Kho</h3>
-              <span class="badge badge-success" style="font-size: 11px;">⚡ Realtime</span>
+          <!-- CỘT PHẢI: BIỂU ĐỒ TRÒN TỶ LỆ CƠ CẤU TỒN KHO (HTML5 CANVAS REALTIME) -->
+          <section class="card donut-card" aria-labelledby="donut-title">
+            <div class="card-header donut-card-header">
+              <div>
+                <h3 class="card-title" id="donut-title">
+                  <span class="title-icon-box" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                      <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                    </svg>
+                  </span>
+                  Phân Bổ Tồn Kho
+                </h3>
+                <p class="section-subtitle">Tỷ lệ an toàn danh mục vật tư</p>
+              </div>
+              <span class="badge badge-success realtime-pill">
+                <span class="live-dot-mini" aria-hidden="true"></span>Realtime
+              </span>
             </div>
+
             <div class="donut-center-wrapper">
-              <canvas id="donutChart" width="220" height="220"></canvas>
+              <canvas id="donutChart" width="210" height="210" role="img" aria-label="Biểu đồ tròn phân bổ tỷ lệ tồn kho giữa Còn hàng, Sắp hết và Hết hàng"></canvas>
+              <!-- Thanh Tooltip tương tác neo gọn phía dưới biểu đồ, không che chữ tâm và không tràn viền -->
+              <div id="donut-tooltip" class="donut-tooltip" role="status" aria-live="polite" hidden></div>
             </div>
-            <div class="donut-legend-modern">
-              <div class="donut-pill in-stock">
-                <span class="dot-indicator green"></span>
+
+            <div class="donut-legend-modern" role="list" aria-label="Chú giải cơ cấu tồn kho">
+              <div class="donut-pill in-stock" data-slice-index="0" role="listitem" tabindex="0">
+                <span class="dot-indicator green" aria-hidden="true"></span>
                 <span class="pill-name">Còn hàng:</span>
-                <strong id="legend-in-stock">0</strong>
-                <span class="pill-pct" id="pct-in-stock">(0%)</span>
+                <strong class="tabular-nums" id="legend-in-stock">0</strong>
+                <span class="pill-pct tabular-nums" id="pct-in-stock">(0%)</span>
               </div>
-              <div class="donut-pill low-stock">
-                <span class="dot-indicator yellow"></span>
+              <div class="donut-pill low-stock" data-slice-index="1" role="listitem" tabindex="0">
+                <span class="dot-indicator yellow" aria-hidden="true"></span>
                 <span class="pill-name">Sắp hết:</span>
-                <strong id="legend-low-stock">0</strong>
-                <span class="pill-pct" id="pct-low-stock">(0%)</span>
+                <strong class="tabular-nums" id="legend-low-stock">0</strong>
+                <span class="pill-pct tabular-nums" id="pct-low-stock">(0%)</span>
               </div>
-              <div class="donut-pill out-stock">
-                <span class="dot-indicator red"></span>
+              <div class="donut-pill out-stock" data-slice-index="2" role="listitem" tabindex="0">
+                <span class="dot-indicator red" aria-hidden="true"></span>
                 <span class="pill-name">Hết hàng:</span>
-                <strong id="legend-out-stock">0</strong>
-                <span class="pill-pct" id="pct-out-stock">(0%)</span>
+                <strong class="tabular-nums" id="legend-out-stock">0</strong>
+                <span class="pill-pct tabular-nums" id="pct-out-stock">(0%)</span>
               </div>
             </div>
+
             <!-- Thanh Tỷ Lệ An Toàn Kho -->
-            <div class="ratio-progress-bar" title="Thanh tỷ lệ cơ cấu tồn kho an toàn">
-              <div class="ratio-fill green" id="bar-in-stock" style="width: 0%;"></div>
-              <div class="ratio-fill yellow" id="bar-low-stock" style="width: 0%;"></div>
-              <div class="ratio-fill red" id="bar-out-stock" style="width: 0%;"></div>
+            <div class="ratio-progress-wrapper">
+              <div class="ratio-progress-header">
+                <span class="ratio-label">Chỉ số sức khỏe tồn kho</span>
+                <strong class="ratio-health-score tabular-nums" id="health-score-label">0% an toàn</strong>
+              </div>
+              <div class="ratio-progress-bar" title="Thanh tỷ lệ cơ cấu tồn kho an toàn">
+                <div class="ratio-fill green" id="bar-in-stock" style="width: 0%;"></div>
+                <div class="ratio-fill yellow" id="bar-low-stock" style="width: 0%;"></div>
+                <div class="ratio-fill red" id="bar-out-stock" style="width: 0%;"></div>
+              </div>
             </div>
-          </div>
+          </section>
         </div>
       </main>
     </div>
