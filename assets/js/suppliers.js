@@ -58,7 +58,16 @@ function renderSuppliersTable() {
               ✉️ ${s.email}
             </a>
           </td>
-          <td><span class="badge badge-info">${s.categories || 'Vật tư tổng hợp'}</span></td>
+          <td style="min-width: 170px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+              ${(s.categories || 'Vật tư tổng hợp')
+                .split(',')
+                .map(c => c.trim())
+                .filter(Boolean)
+                .map(c => `<span class="badge badge-info" style="white-space: nowrap;">${c}</span>`)
+                .join('')}
+            </div>
+          </td>
           <td><strong style="color:var(--primary); font-size:13.5px;">${DB.formatCurrency(totalBought)}</strong></td>
           <td><span title="${s.rating || 5} sao">${stars}</span></td>
           <td style="text-align: right; white-space: nowrap;">
@@ -88,7 +97,14 @@ function renderSuppliersTable() {
               <span class="mobile-sku-badge">${s.id}</span>
               <span style="font-size:12px;">${stars}</span>
             </div>
-            <span class="badge badge-info">${s.categories || 'Vật tư tổng hợp'}</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+              ${(s.categories || 'Vật tư tổng hợp')
+                .split(',')
+                .map(c => c.trim())
+                .filter(Boolean)
+                .map(c => `<span class="badge badge-info" style="white-space: nowrap;">${c}</span>`)
+                .join('')}
+            </div>
           </div>
           <h4 class="mobile-item-title">${s.name}</h4>
           <div class="mobile-item-sub">📍 ${s.address || 'Trụ sở đối tác'}</div>
