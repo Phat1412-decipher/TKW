@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Kho - Tổng Quan & Cảnh Báo Tồn Kho</title>
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/index.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar component -->
+    <div id="sidebar-container"></div>
+
+    <div class="app-main">
+      <!-- Header component -->
+      <div id="header-container"></div>
+
+      <main class="page-content">
+        <!-- 4 KPI CARDS -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h4>Tổng Số Mặt Hàng</h4>
+              <div class="kpi-value" id="kpi-total-items">0</div>
+            </div>
+            <div class="kpi-icon kpi-blue">📦</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h4>Giá Trị Tài Sản Kho</h4>
+              <div class="kpi-value" id="kpi-total-value">0 đ</div>
+            </div>
+            <div class="kpi-icon kpi-green">💰</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h4>Báo Động: Hết Hàng</h4>
+              <div class="kpi-value" id="kpi-out-stock" style="color: var(--danger);">0</div>
+            </div>
+            <div class="kpi-icon kpi-red">🚨</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <h4>Cảnh Báo: Sắp Hết</h4>
+              <div class="kpi-value" id="kpi-low-stock" style="color: var(--warning);">0</div>
+            </div>
+            <div class="kpi-icon kpi-yellow">⚠️</div>
+          </div>
+        </div>
+
+        <!-- SƠ ĐỒ BẢN ĐỒ KỆ KHO THỜI GIAN THỰC (ĐƯA LÊN TRÊN ĐỂ DỄ QUAN SÁT) -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+            <div>
+              <h3 class="card-title">🗺️ Sơ Đồ Mặt Bằng Kệ Kho Thông Minh (IoT Rack Heatmap)</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Trạng thái thời gian thực theo vị trí kệ (Bấm vào kệ để nhập hàng nhanh):</p>
+            </div>
+            <div style="display: flex; gap: 14px; font-size: 12px; align-items: center;">
+              <span><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 2px; margin-right: 4px;"></span>Còn hàng</span>
+              <span><span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 2px; margin-right: 4px;"></span>Sắp hết</span>
+              <span><span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 2px; margin-right: 4px;"></span>Hết hàng / Trống</span>
+            </div>
+          </div>
+          <div class="rack-grid" id="rack-heatmap-grid" style="margin-top: 8px;">
+            <!-- JS render các ô kệ hàng -->
+          </div>
+        </div>
+
+        <div class="dashboard-split-grid">
+          <!-- BẢNG CẢNH BÁO NGUY CẤP (THU NHỎ GỌN GÀNG, CÓ SCROLLBAR MƯỢT) -->
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+              <h3 class="card-title" style="font-size: 15px;">⚠️ Danh Sách Vật Tư Sắp Hết Hoặc Dưới Định Mức Tối Thiểu</h3>
+              <span class="badge badge-warning" id="warning-count-badge" style="font-size: 11px;">0 mục cần chú ý</span>
+            </div>
+
+            <!-- CHẾ ĐỘ XEM BẢNG CHO DESKTOP -->
+            <div class="table-responsive urgent-desktop-table" style="max-height: 275px; overflow-y: auto;">
+              <table class="table" style="font-size: 12.5px;">
+                <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 2;">
+                  <tr>
+                    <th>Mã SKU</th>
+                    <th>Tên Vật Tư</th>
+                    <th>Kệ</th>
+                    <th>Tồn Kho</th>
+                    <th>Định Mức</th>
+                    <th>Trạng Thái</th>
+                    <th style="text-align: right;">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="urgent-table-body">
+                  <!-- Dữ liệu JS render -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- CHẾ ĐỘ XEM THẺ CHO SMARTPHONE (KHÔNG BỊ CẮT CỘT, DỄ BẤM NHẬP HÀNG) -->
+            <div class="urgent-mobile-list" id="urgent-mobile-list">
+              <!-- Dữ liệu JS render -->
+            </div>
+          </div>
+
+          <!-- BIỂU ĐỒ TRÒN TỶ LỆ CƠ CẤU TỒN KHO (HTML5 CANVAS REALTIME) -->
+          <div class="card donut-card" style="margin-bottom: 0;">
+            <div class="card-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+              <h3 class="card-title" style="font-size: 15px;">📊 Phân Bổ Tồn Kho</h3>
+              <span class="badge badge-success" style="font-size: 11px;">⚡ Realtime</span>
+            </div>
+            <div class="donut-center-wrapper">
+              <canvas id="donutChart" width="220" height="220"></canvas>
+            </div>
+            <div class="donut-legend-modern">
+              <div class="donut-pill in-stock">
+                <span class="dot-indicator green"></span>
+                <span class="pill-name">Còn hàng:</span>
+                <strong id="legend-in-stock">0</strong>
+                <span class="pill-pct" id="pct-in-stock">(0%)</span>
+              </div>
+              <div class="donut-pill low-stock">
+                <span class="dot-indicator yellow"></span>
+                <span class="pill-name">Sắp hết:</span>
+                <strong id="legend-low-stock">0</strong>
+                <span class="pill-pct" id="pct-low-stock">(0%)</span>
+              </div>
+              <div class="donut-pill out-stock">
+                <span class="dot-indicator red"></span>
+                <span class="pill-name">Hết hàng:</span>
+                <strong id="legend-out-stock">0</strong>
+                <span class="pill-pct" id="pct-out-stock">(0%)</span>
+              </div>
+            </div>
+            <!-- Thanh Tỷ Lệ An Toàn Kho -->
+            <div class="ratio-progress-bar" title="Thanh tỷ lệ cơ cấu tồn kho an toàn">
+              <div class="ratio-fill green" id="bar-in-stock" style="width: 0%;"></div>
+              <div class="ratio-fill yellow" id="bar-low-stock" style="width: 0%;"></div>
+              <div class="ratio-fill red" id="bar-out-stock" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/db.js"></script>
+  <script src="assets/js/layout.js"></script>
+  <script src="assets/js/index.js"></script>
+</body>
+</html>
