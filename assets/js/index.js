@@ -6,13 +6,9 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Khởi tạo Layout chung
   initLayout('index');
-
-  // 2. Tải và render dữ liệu
   loadDashboardData();
 
-  // 3. Đăng ký nhận thông báo Realtime từ hệ thống
   if (window.DB && typeof window.DB.onUpdate === 'function') {
     window.DB.onUpdate(() => {
       loadDashboardData();
@@ -23,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadDashboardData() {
   const items = DB.getItems();
 
-  let totalItems = items.length;
+  const totalItems = items.length;
   let totalValue = 0;
   let outOfStockCount = 0;
   let lowStockCount = 0;
@@ -61,13 +57,8 @@ function loadDashboardData() {
 
   document.getElementById('warning-count-badge').textContent = `${urgentItems.length} mặt hàng nguy cấp`;
 
-  // Render Bảng Cảnh Báo Nguy Cấp
   renderUrgentTable(urgentItems);
-
-  // Vẽ Biểu đồ Donut Canvas
   renderDonutChart(inStockCount, lowStockCount, outOfStockCount);
-
-  // Render Sơ Đồ Kệ Hàng Thời Gian Thực (Heatmap)
   renderRackHeatmap(items);
 }
 
@@ -75,29 +66,31 @@ function renderUrgentTable(urgentItems) {
   const tbody = document.getElementById('urgent-table-body');
   const mobileList = document.getElementById('urgent-mobile-list');
 
-  // 1. Render Bảng Desktop
+  const plusSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>`;
+
   if (tbody) {
     if (urgentItems.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 24px; color: var(--success); font-weight: 500;">🎉 Tuyệt vời! Hiện tại không có mặt hàng nào dưới định mức an toàn.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 28px; color: var(--success-text); font-weight: 600;">Tất cả mặt hàng trong kho đều đạt định mức tồn kho an toàn.</td></tr>`;
     } else {
       tbody.innerHTML = urgentItems.map(item => `
         <tr>
-          <td><strong>${item.id}</strong></td>
+          <td><code>${item.id}</code></td>
           <td>
             <div><strong>${item.name}</strong></div>
             <small style="color: var(--text-muted);">${item.category} • ${item.warehouse}</small>
           </td>
           <td><code>${item.location || 'N/A'}</code></td>
-          <td><strong style="color: ${item.status.colorHex}; font-size: 15px;">${item.quantity}</strong> ${item.unit}</td>
-          <td>${item.minThreshold} ${item.unit}</td>
+          <td><strong class="mono-num" style="color: ${item.status.colorHex}; font-size: 14px;">${item.quantity}</strong> <small>${item.unit}</small></td>
+          <td class="mono-num">${item.minThreshold} <small>${item.unit}</small></td>
           <td>
             <span class="badge ${item.status.badgeClass}">
               ${item.status.label}
             </span>
           </td>
-          <td>
-            <button class="btn btn-primary btn-sm" onclick="quickRestock('${item.id}')">
-              ➕ Nhập hàng ngay
+          <td style="text-align: right;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="quickRestock('${item.id}')">
+              ${plusSvg}
+              Nhập hàng ngay
             </button>
           </td>
         </tr>
@@ -105,12 +98,11 @@ function renderUrgentTable(urgentItems) {
     }
   }
 
-  // 2. Render Danh Sách Thẻ Tối Ưu Cho Smartphone (Tránh tràn bảng, dễ thao tác ngón tay)
   if (mobileList) {
     if (urgentItems.length === 0) {
       mobileList.innerHTML = `
-        <div style="text-align:center; padding: 24px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0; color:#15803d; font-size:13.5px; font-weight:600;">
-          🎉 Tuyệt vời! Tất cả vật tư đều trên định mức an toàn.
+        <div style="text-align:center; padding: 24px; background:var(--success-bg); border-radius:10px; border:1px solid var(--success-border); color:var(--success-text); font-size:13.5px; font-weight:600;">
+          Tất cả vật tư đều đạt trên định mức an toàn.
         </div>
       `;
     } else {
@@ -121,19 +113,20 @@ function renderUrgentTable(urgentItems) {
               <span class="mobile-sku-badge">${item.id}</span>
               <span class="badge ${item.status.badgeClass}">${item.status.label}</span>
             </div>
-            <span class="mobile-location-tag">📍 ${item.location || 'Kệ N/A'}</span>
+            <span class="mobile-location-tag">${item.location || 'Kệ N/A'}</span>
           </div>
 
           <h4 class="mobile-item-title">${item.name}</h4>
           <div class="mobile-item-sub">${item.category} • ${item.warehouse}</div>
 
           <div class="mobile-item-meta-grid">
-            <div>Tồn kho: <strong style="color: ${item.status.colorHex}; font-size:15px;">${item.quantity} ${item.unit}</strong></div>
-            <div>Định mức tối thiểu: <strong>${item.minThreshold} ${item.unit}</strong></div>
+            <div>Tồn kho: <strong class="mono-num" style="color: ${item.status.colorHex}; font-size:14.5px;">${item.quantity} ${item.unit}</strong></div>
+            <div>Định mức tối thiểu: <strong class="mono-num">${item.minThreshold} ${item.unit}</strong></div>
           </div>
 
-          <button class="btn btn-primary" style="width:100%; min-height:42px; font-weight:600;" onclick="quickRestock('${item.id}')">
-            ➕ Nhập hàng ngay
+          <button type="button" class="btn btn-primary" style="width:100%;" onclick="quickRestock('${item.id}')">
+            ${plusSvg}
+            Nhập hàng ngay
           </button>
         </div>
       `).join('');
@@ -141,23 +134,19 @@ function renderUrgentTable(urgentItems) {
   }
 }
 
-// Biến lưu trạng thái hoạt họa Donut Chart
 let donutAnimId = null;
 let currentDonutHover = -1;
 
-// Vẽ Donut Chart bằng HTML5 Canvas Hiện Đại với Hoạt Họa & Tương Tác Tooltip
 function renderDonutChart(inStock, lowStock, outStock) {
   const canvas = document.getElementById('donutChart');
   if (!canvas) return;
 
   const total = inStock + lowStock + outStock;
 
-  // Tính tỷ lệ phần trăm
   const pctIn = total > 0 ? Math.round((inStock / total) * 100) : 0;
   const pctLow = total > 0 ? Math.round((lowStock / total) * 100) : 0;
   const pctOut = total > 0 ? Math.max(0, 100 - pctIn - pctLow) : 0;
 
-  // Cập nhật nhãn và thanh tỷ lệ an toàn
   const elPctIn = document.getElementById('pct-in-stock');
   const elPctLow = document.getElementById('pct-low-stock');
   const elPctOut = document.getElementById('pct-out-stock');
@@ -172,7 +161,6 @@ function renderDonutChart(inStock, lowStock, outStock) {
   if (barLow) barLow.style.width = `${pctLow}%`;
   if (barOut) barOut.style.width = `${pctOut}%`;
 
-  // Thiết lập Canvas HiDPI cho màn hình Retina & Smartphone siêu sắc nét
   const dpr = window.devicePixelRatio || 1;
   const displayWidth = 220;
   const displayHeight = 220;
@@ -195,16 +183,16 @@ function renderDonutChart(inStock, lowStock, outStock) {
   const outerRadius = 88;
   const innerRadius = 58;
 
-  // Hủy animation cũ nếu có
   if (donutAnimId) cancelAnimationFrame(donutAnimId);
 
+  const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const startTime = performance.now();
-  const animDuration = 650; // ms
+  const animDuration = prefersReducedMotion ? 1 : 600;
 
   function drawFrame(now) {
     const elapsed = now - startTime;
     const progress = Math.min(1, elapsed / animDuration);
-    const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    const ease = 1 - Math.pow(1 - progress, 3);
 
     ctx.clearRect(0, 0, displayWidth, displayHeight);
 
@@ -218,7 +206,7 @@ function renderDonutChart(inStock, lowStock, outStock) {
     }
 
     let startAngle = -Math.PI / 2;
-    const gapAngle = (total > 1 ? 0.04 : 0); // Khoảng hở phân đoạn hiện đại
+    const gapAngle = (total > 1 ? 0.04 : 0);
 
     data.forEach((slice, idx) => {
       if (slice.value === 0) return;
@@ -245,23 +233,21 @@ function renderDonutChart(inStock, lowStock, outStock) {
       startAngle += sliceAngle;
     });
 
-    // Vẽ Vòng Tròn Tâm
     ctx.beginPath();
     ctx.arc(centerX, centerY, innerRadius - 4, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff';
     ctx.fill();
 
-    // Hiển thị số lượng động ở giữa
     const currentCount = Math.round(total * ease);
     ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.font = '700 24px "JetBrains Mono", ui-monospace, monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(currentCount, centerX, centerY - 6);
 
-    ctx.font = '500 11.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.font = '600 11.5px "Plus Jakarta Sans", -apple-system, sans-serif';
     ctx.fillStyle = '#64748b';
-    ctx.fillText('Mặt hàng', centerX, centerY + 15);
+    ctx.fillText('MẶT HÀNG', centerX, centerY + 16);
 
     if (progress < 1) {
       donutAnimId = requestAnimationFrame(drawFrame);
@@ -270,7 +256,6 @@ function renderDonutChart(inStock, lowStock, outStock) {
 
   donutAnimId = requestAnimationFrame(drawFrame);
 
-  // Xử lý tương tác Hover & Touch Tooltip trực tiếp trên Canvas
   function handlePointer(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     const x = clientX - rect.left;
@@ -298,11 +283,9 @@ function renderDonutChart(inStock, lowStock, outStock) {
         currentDonutHover = found;
         requestAnimationFrame((now) => drawFrame(now + animDuration));
       }
-    } else {
-      if (currentDonutHover !== -1) {
-        currentDonutHover = -1;
-        requestAnimationFrame((now) => drawFrame(now + animDuration));
-      }
+    } else if (currentDonutHover !== -1) {
+      currentDonutHover = -1;
+      requestAnimationFrame((now) => drawFrame(now + animDuration));
     }
   }
 
@@ -318,7 +301,7 @@ function renderDonutChart(inStock, lowStock, outStock) {
   };
 }
 
-// Render Sơ Đồ Kệ Kho Thông Minh (Warehouse Heatmap)
+// Render Sơ Đồ Kệ Kho Thông Minh (Semantic <button> cho Keyboard & Screen Reader A11y)
 function renderRackHeatmap(items) {
   const container = document.getElementById('rack-heatmap-grid');
   if (!container) return;
@@ -330,9 +313,9 @@ function renderRackHeatmap(items) {
     else if (status.code === 'LOW') statusClass = 'status-low';
 
     return `
-      <div class="rack-cell ${statusClass}" onclick="quickRestock('${item.id}')" title="Kệ: ${item.location} - Nhấn để nhập hàng">
+      <button type="button" class="rack-cell ${statusClass}" onclick="quickRestock('${item.id}')" title="Kệ: ${item.location} — Nhấn để nhập hàng bổ sung cho ${item.name}">
         <div class="rack-header-row">
-          <span class="rack-code">📍 ${item.location || 'Kệ N/A'}</span>
+          <span class="rack-code">${item.location || 'Kệ N/A'}</span>
           <span class="badge ${status.badgeClass} rack-badge">${status.label}</span>
         </div>
         <div class="rack-item-name" title="${item.name}">${item.name}</div>
@@ -340,7 +323,7 @@ function renderRackHeatmap(items) {
           <span class="rack-qty-label">Tồn kho:</span>
           <span class="rack-qty-val"><strong style="color:${status.colorHex};">${item.quantity}</strong> ${item.unit}</span>
         </div>
-      </div>
+      </button>
     `;
   }).join('');
 }
